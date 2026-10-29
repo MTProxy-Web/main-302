@@ -43,3 +43,9 @@ test('a rotation excludes only the moving slot and keeps four ready mirrors',()=
   assert.throws(()=>activePool(mirrors,pages,{operation_id:'r1',excluded_repository:'Other/repository'}));
   assert.throws(()=>activePool(mirrors,pages,{operation_id:'invalid',excluded_repository:'MTProxy-Web/web-1'}));
 });
+
+test('redirect refresh keys are removed without changing user query encoding',()=>{
+  const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];let result;
+  vm.runInNewContext(script,{atob:value=>Buffer.from(value,'base64').toString(),Uint32Array,URL,crypto:{getRandomValues:array=>{array[0]=0;return array;}},window:{location:{search:'?utm_source=hello%20world&_mtproxy_refresh=nonce&x=%2B',hash:'#proxies',replace:value=>{result=value;}}}});
+  assert.equal(result,'https://velora.mtproxy.bar/?utm_source=hello%20world&x=%2B#proxies');
+});

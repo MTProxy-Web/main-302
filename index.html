@@ -17,7 +17,8 @@
       crypto.getRandomValues(random);
     } while (random[0] >= limit);
     const target = new URL('https://' + pool.labels[random[0] % pool.labels.length] + '.' + pool.domain + '/');
-    target.search = window.location.search;
+    const search = window.location.search.slice(1).split('&').filter(part => part.split('=', 1)[0] !== '_mtproxy_refresh').join('&');
+    target.search = search ? '?' + search : '';
     target.hash = window.location.hash;
     window.location.replace(target.href);
   </script>
