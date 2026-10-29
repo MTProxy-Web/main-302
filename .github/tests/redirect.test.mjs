@@ -34,3 +34,12 @@ test('random selection rejects the biased upper boundary',()=>{
   vm.runInNewContext(script,{atob:value=>Buffer.from(value,'base64').toString(),Uint32Array,URL,crypto:{getRandomValues:array=>{array[0]=calls++===0?0xffffffff:2;return array;}},window:{location:{search:'',hash:'',replace:value=>{result=value;}}}});
   assert.equal(calls,2);assert.equal(result,'https://koles.mtproxy.bar/');
 });
+
+test('a rotation excludes only the moving slot and keeps four ready mirrors',()=>{
+  const pending=structuredClone(pages);pending[1].https_certificate=null;pending[1].https_enforced=false;
+  const pool=activePool(mirrors,pending,{operation_id:'r1',excluded_repository:'MTProxy-Web/web-2'});
+  assert.deepEqual(pool.labels,['velora','koles','volar','dibug']);
+  assert.throws(()=>activePool(mirrors,pending));
+  assert.throws(()=>activePool(mirrors,pages,{operation_id:'r1',excluded_repository:'Other/repository'}));
+  assert.throws(()=>activePool(mirrors,pages,{operation_id:'invalid',excluded_repository:'MTProxy-Web/web-1'}));
+});
